@@ -1,0 +1,141 @@
+{
+  "config": {
+    "name": "test-project",
+    "version": "1.0.0",
+    "description": "Test API project"
+  },
+  "environments": [
+    {
+      "name": "dev",
+      "baseUrl": "https://jsonplaceholder.typicode.com",
+      "variables": {
+        "userId": {
+          "value": "1",
+          "description": "Default user ID"
+        },
+        "apiKey": {
+          "value": "******",
+          "secret": true,
+          "description": "API access key"
+        }
+      }
+    }
+  ],
+  "groups": {
+    "groups": []
+  },
+  "endpoints": [
+    {
+      "id": "ep-get-users",
+      "name": "获取用户列表",
+      "description": "获取所有用户列表",
+      "method": "GET",
+      "path": "/users",
+      "tags": [
+        "用户",
+        "列表"
+      ],
+      "parameters": [
+        {
+          "name": "_limit",
+          "in": "query",
+          "required": false,
+          "description": "限制返回数量",
+          "example": 5
+        }
+      ],
+      "headers": {},
+      "assertions": [
+        {
+          "id": "assert-1",
+          "name": "状态码200",
+          "type": "status",
+          "operator": "eq",
+          "value": 200,
+          "enabled": true
+        },
+        {
+          "id": "assert-2",
+          "name": "响应时间小于3秒",
+          "type": "time",
+          "operator": "lt",
+          "value": 3000,
+          "enabled": true
+        }
+      ],
+      "examples": [
+        {
+          "id": "ex-1",
+          "name": "默认列表",
+          "description": "获取默认数量的用户"
+        },
+        {
+          "id": "ex-2",
+          "name": "限制5条",
+          "description": "只获取5个用户",
+          "queryParams": {
+            "_limit": "5"
+          }
+        }
+      ],
+      "favorite": true
+    },
+    {
+      "id": "ep-get-user",
+      "name": "获取用户详情",
+      "description": "根据ID获取用户详情",
+      "method": "GET",
+      "path": "/users/{{userId}}",
+      "tags": [
+        "用户",
+        "详情"
+      ],
+      "parameters": [
+        {
+          "name": "userId",
+          "in": "path",
+          "required": true,
+          "description": "用户ID",
+          "example": 1
+        }
+      ],
+      "headers": {},
+      "assertions": [
+        {
+          "id": "assert-1",
+          "name": "状态码200",
+          "type": "status",
+          "operator": "eq",
+          "value": 200,
+          "enabled": true
+        },
+        {
+          "id": "assert-2",
+          "name": "返回id字段",
+          "type": "json-path",
+          "operator": "exists",
+          "value": true,
+          "path": "id",
+          "enabled": true
+        }
+      ],
+      "examples": [
+        {
+          "id": "ex-1",
+          "name": "用户1",
+          "pathParams": {
+            "userId": "1"
+          }
+        },
+        {
+          "id": "ex-2",
+          "name": "用户2",
+          "pathParams": {
+            "userId": "2"
+          }
+        }
+      ],
+      "favorite": false
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+id: ep-get-user
+name: 获取用户详情
+description: 根据ID获取用户详情
+method: GET
+path: /users/{{userId}}
+tags:
+  - 用户
+  - 详情
+parameters:
+  - name: userId
+    in: path
+    required: true
+    description: 用户ID
+    example: 1
+headers: {}
+assertions:
+  - id: assert-1
+    name: 状态码200
+    type: status
+    operator: eq
+    value: 200
+    enabled: true
+  - id: assert-2
+    name: 返回id字段
+    type: json-path
+    operator: exists
+    value: true
+    path: id
+    enabled: true
+examples:
+  - id: ex-1
+    name: 用户1
+    pathParams:
+      userId: '1'
+  - id: ex-2
+    name: 用户2
+    pathParams:
+      userId: '2'
+favorite: false

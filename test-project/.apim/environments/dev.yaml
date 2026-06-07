@@ -1,0 +1,16 @@
+name: dev
+baseUrl: https://jsonplaceholder.typicode.com
+variables:
+  userId:
+    value: '1'
+    description: Default user ID
+  apiKey:
+    value: my-secret-key-12345
+    secret: true
+    description: API access key
+  testVar:
+    value: hello
+    secret: false
+    description: 测试变量
+auth:
+  type: none

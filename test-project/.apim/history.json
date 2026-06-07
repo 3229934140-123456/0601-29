@@ -1,0 +1,34 @@
+[
+  {
+    "id": "92tahngc",
+    "timestamp": 1780843450492,
+    "endpointId": "ep-get-user",
+    "endpointName": "获取用户详情",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/users/1",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "time": 157
+    },
+    "success": true
+  },
+  {
+    "id": "mdtxhaht",
+    "timestamp": 1780843440557,
+    "endpointId": "ep-get-users",
+    "endpointName": "获取用户列表",
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/users",
+    "request": {
+      "headers": {}
+    },
+    "response": {
+      "status": 200,
+      "time": 335
+    },
+    "success": true
+  }
+]
