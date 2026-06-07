@@ -107,7 +107,7 @@ export async function replayHistory(cwd: string, index: number, options: { env?:
   const history = loadHistory(cwd);
 
   if (index < 1 || index > history.length) {
-    console.log(chalk.red(`无效的序号: ${index}`));
+    console.log(chalk.red('无效的序号: ' + index));
     return;
   }
 
@@ -117,37 +117,47 @@ export async function replayHistory(cwd: string, index: number, options: { env?:
   const env = loadEnvironment(envName, cwd);
 
   if (!env) {
-    console.log(chalk.red(`环境 "${envName}" 不存在`));
+    console.log(chalk.red('环境 "' + envName + '" 不存在'));
     return;
   }
 
-  let endpoint = entry.endpointId ? findEndpointByNameOrId(entry.endpointId, cwd) : null;
-
-  if (!endpoint) {
-    console.log(chalk.yellow('未找到对应接口，使用历史记录中的信息重放'));
-    endpoint = {
-      id: generateId(),
-      name: entry.endpointName,
-      method: entry.method,
-      path: entry.url.replace(env.baseUrl, ''),
-    };
+  let originalPath = entry.url;
+  if (entry.url.indexOf('://') >= 0) {
+    var pathStart = entry.url.indexOf('/', entry.url.indexOf('://') + 3);
+    if (pathStart >= 0) {
+      originalPath = entry.url.substring(pathStart);
+    }
   }
 
-  console.log(chalk.cyan(`\n🔄 重放请求: ${entry.endpointName}`));
-  console.log(chalk.gray(`  环境: ${envName}\n`));
+  var queryIndex = originalPath.indexOf('?');
+  var basePath = queryIndex >= 0 ? originalPath.substring(0, queryIndex) : originalPath;
 
-  const result = await sendRequest({
-    env,
-    endpoint,
-    body: entry.request.body,
-    headers: entry.request.headers,
+  var endpoint = {
+    id: entry.endpointId || generateId(),
+    name: entry.endpointName,
+    method: entry.method,
+    path: basePath,
+    headers: {},
+  } as any;
+
+  console.log(chalk.cyan('\n重放请求: ' + entry.endpointName));
+  console.log(chalk.gray('  环境: ' + envName));
+  console.log(chalk.gray('  原始URL: ' + entry.url));
+  console.log('');
+
+  var replayHeaders = entry.request.headers || {};
+  var replayBody = entry.request.body;
+  var replayQueryParams = entry.request.params || entry.request.queryParams || {};
+
+  var result = await sendRequest({
+    env: env,
+    endpoint: endpoint,
+    body: replayBody,
+    headers: replayHeaders,
+    queryParams: replayQueryParams,
   });
 
-  const { sendEndpoint } = require('./send');
-  if (typeof sendEndpoint === 'function') {
-  }
-
-  const newEntry = {
+  var newEntry = {
     id: result.id,
     timestamp: result.timestamp,
     endpointId: result.endpointId,
@@ -157,6 +167,8 @@ export async function replayHistory(cwd: string, index: number, options: { env?:
     request: {
       headers: result.request.headers,
       body: result.request.body,
+      params: result.request.params,
+      queryParams: result.request.params,
     },
     response: {
       status: result.response.status,
@@ -166,15 +178,16 @@ export async function replayHistory(cwd: string, index: number, options: { env?:
   } as HistoryEntry;
   appendHistory(newEntry, cwd);
 
-  const statusColor = result.success ? chalk.green : chalk.red;
-  console.log(statusColor(`\n  ${result.response.status} ${result.response.statusText}`));
-  console.log(chalk.gray(`  耗时: ${formatTime(result.response.time)}`));
+  var statusColor = result.success ? chalk.green : chalk.red;
+  console.log(statusColor('  ' + result.response.status + ' ' + result.response.statusText));
+  console.log(chalk.gray('  耗时: ' + formatTime(result.response.time)));
+  console.log(chalk.gray('  URL: ' + result.url));
   console.log('');
 
   if (result.success) {
-    console.log(chalk.green('✨ 重放成功'));
+    console.log(chalk.green('重放成功'));
   } else {
-    console.log(chalk.red('❌ 重放失败'));
+    console.log(chalk.red('重放失败'));
   }
   console.log('');
 }

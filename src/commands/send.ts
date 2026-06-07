@@ -11,6 +11,7 @@ import {
   findEndpointByNameOrId,
   appendHistory,
   saveEndpoint,
+  loadGroups,
 } from '../core/config';
 import { sendRequest, formatTime, formatSize } from '../core/request';
 import { maskSensitiveData, maskHeaders } from '../core/mask';
@@ -19,7 +20,7 @@ interface SendOptions {
   env?: string;
   example?: string;
   body?: string;
-  query?: string;
+  queryParams?: string;
   header?: string[];
   showHeaders?: boolean;
   noMask?: boolean;
@@ -66,9 +67,9 @@ export async function sendEndpoint(cwd: string, query: string, options: SendOpti
     }
   }
 
-  if (options.query) {
+  if (options.queryParams) {
     const params: Record<string, string> = {};
-    options.query.split('&').forEach(function(pair) {
+    options.queryParams.split('&').forEach(function(pair) {
       const parts = pair.split('=');
       const key = parts[0];
       const val = parts.slice(1).join('=');
@@ -109,6 +110,10 @@ export async function sendEndpoint(cwd: string, query: string, options: SendOpti
       request: {
         headers: result.request.headers,
         body: result.request.body,
+        params: result.request.params,
+        queryParams: result.request.params,
+        exampleId: selectedExample?.id,
+        exampleName: selectedExample?.name,
       },
       response: {
         status: result.response.status,
@@ -163,6 +168,8 @@ export async function sendInteractive(cwd: string, options: SendOptions): Promis
 export function listEndpoints(cwd: string, options: { group?: string; tag?: string; favorite?: boolean; search?: string }): void {
   ensureProject(cwd);
   let endpoints = loadEndpoints(cwd);
+  const groups = loadGroups(cwd);
+  const groupMap = new Map(groups.map(function(g) { return [g.id, g.name]; }));
 
   if (options.favorite) {
     endpoints = endpoints.filter(function(e) { return e.favorite; });
@@ -195,12 +202,13 @@ export function listEndpoints(cwd: string, options: { group?: string; tag?: stri
 
   for (const ep of endpoints) {
     const methodColor = getMethodColor(ep.method);
+    const groupName = ep.groupId ? (groupMap.get(ep.groupId) || ep.groupId) : '';
     table.push([
       ep.favorite ? '*' : '',
       methodColor(ep.method),
       ep.name,
       chalk.gray(ep.path),
-      ep.groupId ? ep.groupId : '',
+      groupName,
     ]);
   }
 

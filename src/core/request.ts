@@ -1,7 +1,7 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { ApiEndpoint, Environment, RequestResult, Example } from '../types';
 import { buildEnvVariables, renderObject, renderTemplate } from './template';
-import { applyAuth, mergeAuth } from './auth';
+import { applyAuth, applyAuthToParams, mergeAuth } from './auth';
 import { runAssertions } from './assertions';
 import { generateId } from './config';
 
@@ -57,6 +57,7 @@ export async function sendRequest(options: SendOptions): Promise<RequestResult> 
 
   const authConfig = mergeAuth(endpoint.auth, env.auth);
   reqHeaders = applyAuth(reqHeaders, authConfig);
+  reqParams = applyAuthToParams(reqParams, authConfig);
 
   if (reqBody && !reqHeaders['Content-Type'] && !reqHeaders['content-type']) {
     if (typeof reqBody === 'object') {
@@ -102,13 +103,27 @@ export async function sendRequest(options: SendOptions): Promise<RequestResult> 
   const responseBody = typeof response.data === 'string' ? response.data : response.data;
   const responseSize = calculateResponseSize(response.data, response.headers);
 
+  var fullUrl = axiosConfig.url as string;
+  if (reqParams && Object.keys(reqParams).length > 0) {
+    var searchParams = new URLSearchParams();
+    for (var _k in reqParams) {
+      if (reqParams.hasOwnProperty(_k)) {
+        searchParams.append(_k, reqParams[_k]);
+      }
+    }
+    var queryStr = searchParams.toString();
+    if (queryStr) {
+      fullUrl += (fullUrl.indexOf('?') >= 0 ? '&' : '?') + queryStr;
+    }
+  }
+
   const result: RequestResult = {
     id: generateId(),
     timestamp: Date.now(),
     endpointId: endpoint.id,
     endpointName: endpoint.name,
     method: endpoint.method,
-    url: axiosConfig.url as string,
+    url: fullUrl,
     request: {
       headers: reqHeaders,
       body: axiosConfig.data,

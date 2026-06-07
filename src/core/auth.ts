@@ -10,14 +10,14 @@ export function applyAuth(headers: Record<string, string>, auth?: AuthConfig): R
     case 'bearer':
       if (auth.bearer?.token) {
         const prefix = auth.bearer.prefix || 'Bearer';
-        result['Authorization'] = `${prefix} ${auth.bearer.token}`;
+        result['Authorization'] = prefix + ' ' + auth.bearer.token;
       }
       break;
 
     case 'basic':
       if (auth.basic?.username && auth.basic?.password !== undefined) {
-        const credentials = `${auth.basic.username}:${auth.basic.password}`;
-        result['Authorization'] = `Basic ${Buffer.from(credentials).toString('base64')}`;
+        const credentials = auth.basic.username + ':' + auth.basic.password;
+        result['Authorization'] = 'Basic ' + Buffer.from(credentials).toString('base64');
       }
       break;
 
@@ -31,6 +31,19 @@ export function applyAuth(headers: Record<string, string>, auth?: AuthConfig): R
 
     case 'oauth2':
       break;
+  }
+
+  return result;
+}
+
+export function applyAuthToParams(params: Record<string, string>, auth?: AuthConfig): Record<string, string> {
+  const result = { ...params };
+  if (!auth || auth.type !== 'api-key') {
+    return result;
+  }
+
+  if (auth.apiKey?.key && auth.apiKey?.value && auth.apiKey.in === 'query') {
+    result[auth.apiKey.key] = auth.apiKey.value;
   }
 
   return result;

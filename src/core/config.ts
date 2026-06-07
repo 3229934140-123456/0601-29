@@ -96,7 +96,14 @@ export function loadGroups(cwd: string = process.cwd()): ApiGroup[] {
     return [];
   }
   const content = fs.readFileSync(groupsPath, 'utf-8');
-  return yaml.load(content) as ApiGroup[];
+  const data = yaml.load(content) as any;
+  if (Array.isArray(data)) {
+    return data;
+  }
+  if (data && Array.isArray(data.groups)) {
+    return data.groups;
+  }
+  return [];
 }
 
 export function saveGroups(groups: ApiGroup[], cwd: string = process.cwd()): void {

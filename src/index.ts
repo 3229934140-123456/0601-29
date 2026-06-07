@@ -42,6 +42,7 @@ import {
   clearHistory,
 } from './commands/history';
 import { exportCollection } from './commands/export';
+import { addGroup, addEndpoint } from './commands/add';
 
 const program = new Command();
 
@@ -184,7 +185,7 @@ program
   .option('-e, --env <env>', '指定环境')
   .option('-x, --example <name>', '使用指定示例')
   .option('-b, --body <json>', '请求体 (JSON)')
-  .option('-q, --query <params>', '查询参数 (key=value&key2=value2)')
+  .option('-Q, --query-params <params>', '查询参数 (key=value&key2=value2)')
   .option('-H, --header <headers...>', '请求头 (Key: Value)')
   .option('-i, --show-headers', '显示请求头和响应头')
   .option('--no-mask', '不隐藏敏感值')
@@ -226,6 +227,35 @@ program
   .action((endpoint) => {
     try {
       toggleFavorite(process.cwd(), endpoint);
+    } catch (error: any) {
+      console.error(chalk.red('错误:'), error.message);
+      process.exit(1);
+    }
+  });
+
+// add 命令
+const addCmd = program
+  .command('add')
+  .description('新增接口或分组');
+
+addCmd
+  .command('group [name]')
+  .description('新增分组')
+  .action(async (name) => {
+    try {
+      await addGroup(process.cwd(), name);
+    } catch (error: any) {
+      console.error(chalk.red('错误:'), error.message);
+      process.exit(1);
+    }
+  });
+
+addCmd
+  .command('endpoint [name]')
+  .description('新增接口')
+  .action(async (name) => {
+    try {
+      await addEndpoint(process.cwd(), name);
     } catch (error: any) {
       console.error(chalk.red('错误:'), error.message);
       process.exit(1);

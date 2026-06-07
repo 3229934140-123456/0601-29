@@ -144,6 +144,11 @@ export interface HistoryEntry {
   request: {
     headers: Record<string, string>;
     body?: any;
+    params?: Record<string, string>;
+    queryParams?: Record<string, string>;
+    pathParams?: Record<string, string>;
+    exampleId?: string;
+    exampleName?: string;
   };
   response: {
     status: number;
